@@ -16,8 +16,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    //Remove last entry from recycler view
-    private lateinit var removeLRV: FloatingActionButton
+    //Total amount & Shared Pref declaration
+    private var dailyCalories = 0
+    private lateinit var sharedPref: SharedPreferences
+
 
     //Intake element declaration
     private lateinit var intakeField: EditText
@@ -37,11 +39,19 @@ class MainActivity : AppCompatActivity() {
     //Daily Calories View
     private lateinit var dailyCalView: TextView
 
-    private var dailyCalories = 0
+    //Remove last entry from recycler view
+    private lateinit var removeLRV: FloatingActionButton
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+        //Get SharedPref ------------------------------------------------
+        sharedPref = getSharedPreferences("accountNum", MODE_PRIVATE)
+        dailyCalories = sharedPref.getInt("accountNm",0)
+
 
         rvList = ArrayList()
         saveNum = ArrayList()
@@ -65,14 +75,41 @@ class MainActivity : AppCompatActivity() {
         //Remove last entry from recycler view
         removeLRV = findViewById(R.id.removeLRV)
 
-        //Buttons
-        intakeBtn.setOnClickListener{ intake() }
-        burnedBtn.setOnClickListener{ burned() }
-        removeLRV.setOnClickListener{ removeLastRV() }
+
+        //INTAKE Button ---------------------------------------------------------------------
+        intakeBtn.setOnClickListener{
+            intake()
+
+            sharedPref.edit().apply{
+                putInt("accountNm", dailyCalories)
+                apply()
+            }
+        }
+
+        //Burned Button ---------------------------------------------------------------------
+        burnedBtn.setOnClickListener{
+            burned()
+
+            sharedPref.edit().apply{
+                putInt("accountNm", dailyCalories)
+                apply()
+            }
+        }
+
+        // Remove Last Entry (FloatingActionButton) -----------------------------------------
+        removeLRV.setOnClickListener{
+            removeLastRV()
+
+            sharedPref.edit().apply{
+                putInt("accountNm", dailyCalories)
+                apply()
+            }
+        }
 
     }
 
-    //----------------------------------------Functions----------------------------------------
+
+    //----------------------------------------Functions----------------------------------------//
 
 
     //Add the amount of calories ----------------------------------------------
@@ -110,7 +147,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    //Sub the amount of calories ----------------------------------------------
+    //burned the amount of calories ----------------------------------------------
     private fun burned(){
         val burnedNum = burnedField.text.toString()
 
@@ -203,6 +240,11 @@ class MainActivity : AppCompatActivity() {
 
                 dailyCalories = 0
                 dailyCalView.text = ("Daily Calories: $dailyCalories")
+
+                sharedPref.edit().apply{
+                    putInt("accountNm", dailyCalories)
+                    apply()
+                }
 
                 Toast.makeText(applicationContext, "The list and total amount have been reset!!", Toast.LENGTH_LONG).show()
                 true
